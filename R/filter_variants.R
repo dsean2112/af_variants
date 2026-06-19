@@ -148,11 +148,11 @@ log <- log %>%
     )
   )
 
-log <- log %>% select(mrn,ttn_present,ttn_mutant,pt_number) %>% mutate(mrn=as.numeric(mrn))
+log <- log %>% select(ttn_present,ttn_mutant,pt_number)
 
 
 ecg <- ecg %>% #select(-ttn_present,-ttn_mutant) %>% 
-  left_join(log,by='mrn')
+  left_join(log,by='pt_number')
 
 
 # select ECGs -------------------------------------------------------------
@@ -167,13 +167,13 @@ ecg <- ecg %>%
 
 # Pick earliest ECG for each patient
 # ecg <- ecg %>%
-#   group_by(mrn) %>%
+#   group_by(pt_number) %>%
 #   slice_min(ecg_date, with_ties = FALSE) %>%
 #   ungroup()
 
 # Pick up to the 5 earliest ECGs per patient
 # ecg <- ecg %>%
-#   group_by(mrn) %>%
+#   group_by(pt_number) %>%
 #   slice_min(ecg_date, n = 5, with_ties = FALSE) %>%
 #   ungroup()
 
@@ -219,7 +219,7 @@ pick_ecgs <- function(df) {
 }
 
 ecg <- ecg %>%
-  group_by(mrn) %>%
+  group_by(pt_number) %>%
   group_modify(~ pick_ecgs(.x)) %>%
   ungroup()
 
@@ -230,7 +230,7 @@ library(rlang)
 library(purrr)
 library(tibble)
 
-ecg_dir <- "/mmfs1/projects/cardio_darbar_chi/common/cohorts/wes-ml-ttn/wfdb"
+ecg_dir <- "/mmfs1/projects/cardio_darbar_chi/common/cohorts/wes-ml-ttn/wfdb-deid"
 
 # Parameters: _______________________________________________
 
@@ -352,8 +352,10 @@ all_pt_numbers <- c()
 n <- nrow(ecg)
 for (i in seq_len(n)) {
   
+  ecg_name <- as.character(ecg$ecg_number[i])
+  
   # read ECG
-  wfdb <- read_wfdb(record = ecg$ecg_name[i], record_dir = ecg_dir,annotator = 'ann')
+  wfdb <- read_wfdb(record = ecg_name, record_dir = ecg_dir,annotator = 'ann')
   sig_length <- length(wfdb$signal[[1]])
   lead_order <- setdiff(names(wfdb$signal),'sample')
   internal_lead_number <- which(lead_order == lead) # must handle carefully due to variable AVF/AVL/AVR order across institutions 
@@ -424,7 +426,7 @@ for (i in seq_len(n)) {
   sig <- wfdb$signal[[lead]]
   # sanity check
   if (is.null(sig)) {
-    warning(sprintf("Missing lead for row %d (%s)", i, ecg$ecg_name[i]))
+    warning(sprintf("Missing lead for row %d (%s)", i, ecg_name))
     next
   }
   # filter
@@ -437,7 +439,7 @@ for (i in seq_len(n)) {
   
   # enforce length 5000
   if (length(filt) != 5000) {
-    warning(sprintf("ECG length != 5000 for row %d (%s)", i, ecg$ecg_name[i]))
+    warning(sprintf("ECG length != 5000 for row %d (%s)", i, ecg_name))
     next
   }
   
