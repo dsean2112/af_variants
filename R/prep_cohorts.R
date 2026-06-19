@@ -795,7 +795,3 @@ log_deid <- log %>% select(-mrn,-first_name,-last_name,-ssn,-census_tract)
 write_parquet(demo_deid,'../deid_demo.parquet')
 write_parquet(ecg_deid,'../deid_ecg_table.parquet')
 write_parquet(log_deid,'../deid_wes-mrn-combined.parquet')
-
-scp -o MACs=hmac-sha2-256 -r dseaney2@131.193.182.245:/home/dseaney2/cardio_darbar_chi_link/common/cohorts/wes-ml-ttn/deid_demo.parquet 'C:\Users\darre\OneDrive\Documents\UICOM Research\WES ML'
-scp -o MACs=hmac-sha2-256 -r dseaney2@131.193.182.245:/home/dseaney2/cardio_darbar_chi_link/common/cohorts/wes-ml-ttn/deid_ecg_table.parquet 'C:\Users\darre\OneDrive\Documents\UICOM Research\WES ML'
-scp -o MACs=hmac-sha2-256 -r dseaney2@131.193.182.245:/home/dseaney2/cardio_darbar_chi_link/common/cohorts/wes-ml-ttn/deid_wes-mrn-combined.parquet 'C:\Users\darre\OneDrive\Documents\UICOM Research\WES ML'
